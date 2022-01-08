@@ -1,16 +1,13 @@
 package com.example.flow
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -55,9 +52,12 @@ class MainActivity : AppCompatActivity() {
     private fun startFlow() {
         findViewById<Button>(R.id.button).setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
-//import kotlinx.coroutines.flow.collect
-                getFlow().collect {
-                    Log.d(TAG, it.toString())
+                flow {
+                    try {
+                        emit("Something")
+                    } catch (ex: Exception) {
+                        emit("Error!")
+                    }
                 }
             }
         }
@@ -65,5 +65,64 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "###"
+    }
+
+    private fun printRange() {
+        CoroutineScope(Dispatchers.Main).launch {
+            (1..5).asFlow()
+                .map {
+                    it * it
+                }
+                .onCompletion {
+                    Log.d(TAG, "onCompletion")
+                }
+                .collect {
+                    Log.d(TAG, it.toString())
+                }
+        }
+    }
+
+    /**
+     * добавим проверку с помощью оператора check. Он выбрасывает IllegalStateException,
+    если условие не соблюдается:
+     */
+    private fun throwError() {
+        CoroutineScope(Dispatchers.Main).launch {
+            (1..5).asFlow()
+                .map {
+//выбрасывается ошибка, если значение == 3
+                    check(it != 3) { "Значение == $it" }//текст ошибки
+                    it * it
+                }
+                .onCompletion {
+                    Log.d(TAG, "onCompletion")
+                }
+                .collect {
+                    Log.d(TAG, it.toString())
+                }
+        }
+    }
+
+    /**
+     * Теперь давайте поймаем ошибку с помощью оператора catch:
+     */
+    private fun catchError() {
+        CoroutineScope(Dispatchers.Main).launch {
+            (1..5).asFlow()
+                .map {
+//выбрасывается ошибка, если значение == 3
+                    check(it != 3) { "Значение == $it" } //текст ошибки
+                    it * it
+                }
+                .onCompletion {
+                    Log.d(TAG, "onCompletion")
+                }
+                .catch { e ->
+                    Log.d(TAG, "Ошибка: $e")
+                }
+                .collect {
+                    Log.d(TAG, it.toString())
+                }
+        }
     }
 }
