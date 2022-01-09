@@ -1,5 +1,6 @@
 package com.example.flow
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -15,12 +16,21 @@ import kotlinx.coroutines.launch
 уйти от RxJava в своем проекте.
  */
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         getFlow()
         startFlow()
+        //setupFlows()
+        //zipFlows()
+        //catchError()
+
+        findViewById<Button>(R.id.button_search).setOnClickListener {
+            startActivity(Intent(this, SearchActivity::class.java))
+        }
     }
 
     /**
@@ -76,6 +86,7 @@ class MainActivity : AppCompatActivity() {
                 .onCompletion {
                     Log.d(TAG, "onCompletion")
                 }
+                //import kotlinx.coroutines.flow.collect
                 .collect {
                     Log.d(TAG, it.toString())
                 }
